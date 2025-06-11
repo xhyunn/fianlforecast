@@ -221,8 +221,8 @@
     }
     .dummy-image {
   width: 100%;
-  padding-top: 75%; /* 4:3 비율 */
-  background-color: #aaa; /* 회색 박스 */
+  padding-top: 75%; 
+  background-color: #aaa; 
   border-radius: 10px;
 }
 
@@ -759,6 +759,7 @@ forecasts: `
         const id = item.dataset.id;
         if (id && contents[id]) {
           contentArea.innerHTML = contents[id];
+          document.getElementById('right').scrollTop = 0;
           if (id === 'forecasts') {
             fullscreenEl.style.display = 'block';
             document.body.classList.add('forecast-open');
