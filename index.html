@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split Scroll Layout</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/sandoll/SandollGothicNeo1.css">
+  <style>
+    .gallery-row { display: flex; justify-content: flex-start;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin: 40px 0;
+      padding: 20px 40px;
+      gap: 24px;
+    }
+    .gallery-item {
+      flex: 0 0 auto;
+      width: 200px;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      filter: grayscale(100%);
+      margin-bottom: 10px;
+    }
+    .gallery-caption {
+      font-size: 9pt;
+      text-align: center;
+      color: #333;
+    }
+    .caption {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 10pt;
+      color: #333;
+      opacity: 0;
+      transition: all 0.3s;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { word-break: keep-all; height: 100%; font-family: 'Sandoll GothicNeo1 Medium', 'Helvetica Neue', sans-serif; background: #fff; color: #000; overflow: hidden;}
+    .container { display: flex; height: 100vh; overflow: hidden;}
+    .left {width: 25%; height: 1000px; overflow-y: scroll;padding: 20px 20px; border-right: 1px solid #ccc; background: #fff;}
+    .right { width: 75%; height: 100%; overflow-y: scroll; padding: 60px 60px; background: #fafafa;}
+    .intro-image {width: 100%; height: 100%; object-fit: cover;}
+    .intro { font-size: 18pt; line-height: 1.3; margin-bottom: 300px; }
+    .menu { font-size: 14pt; color: #999;}
+    .menu li {list-style: none; margin: 12px 0; cursor: pointer;}
+    .menu li.active { color: #000; font-weight: bold;}
+    .content {
+      font-size: 12pt;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      max-width: 1200px;
+      word-break: keep-all;
+      margin: 0 auto;
+      margin-left: ;
+      font-weight: 500;
+    }
+    .content h2 {
+      font-size: 42pt;
+      font-weight: 500;
+      margin-bottom: 40px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      padding-left: 350px;
+      max-width: 1000px;
+    }
+    .content p {
+      margin-bottom: 28px;
+      font-weight: 400;
+      color: #222;
+      max-width: 500px;
+      padding-left: 350px;
+      max-width: 800px;
+    }
+    .content blockquote {
+      font-style: italic;
+      font-size: 18pt;
+      line-height: 1.6;
+      padding-left: 20px;
+      color: #555;
+      margin: 40px 0;
+      padding-left: 350px;
+      max-width: 800px;
+    }
+    .right[style*="background-color: rgb(0, 0, 0)"] .content p,
+    .right[style*="background-color: rgb(0, 0, 0)"] .content blockquote {
+      color: #fff;
+      border-left-color: #888;
+    }
+
+    .grid-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0px;
+      margin: 60px auto;
+      max-width: 1400px;
+      width: 100%;
+    }
+    .grid-gallery .item {
+      perspective: 1000px;
+      height: 33.333vw;
+    }
+    .grid-gallery .flip-card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+    .grid-gallery .item:hover .flip-card {
+      transform: rotateY(180deg);
+    }
+    .grid-gallery .front,
+    .grid-gallery .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      overflow: hidden;
+    }
+    .grid-gallery .front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(85%);
+    }
+    .grid-gallery .back {
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotateY(180deg);
+      font-size: 12pt;
+      text-align: center;
+      padding: 12px;
+    }
+    .grid-gallery .spacer {
+      height: 0;
+    }
+
+    .quote-masonry {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: minmax(100px, auto);
+      gap: 2px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0;
+      background: #eee;
+    }
+    .quote-masonry .quote {
+      border: 0.5px solid #aaa;
+      background: #fff;
+      padding: 30px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 14pt;
+      line-height: 1.6;
+      font-style: italic;
+      box-sizing: border-box;
+      flex-direction: column;
+    }
+    .quote-masonry .quote strong {
+      font-size: 11pt;
+      font-style: normal;
+      font-weight: 600;
+      display: block;
+      margin-top: 12px;
+    }
+    .quote-4x2 { grid-column: span 4; grid-row: span 2; }
+    .quote-4x3 { grid-column: span 4; grid-row: span 3; }
+    .quote-6x2 { grid-column: span 6; grid-row: span 2; }
+    .quote-3x2 { grid-column: span 3; grid-row: span 2; }
+    .quote-3x1 { grid-column: span 3; grid-row: span 1; }
+    .quote-4x1 { grid-column: span 4; grid-row: span 1; }
+
+    #fullscreen-forecast {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #fafafa;
+      color: #000;
+      z-index: 9999;
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+
+    body.forecast-open {
+      overflow: hidden;
+    }
+
+    .center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+    }
+
+    .center-text h1 {
+      font-size: 28pt;
+      margin-bottom: 10px;
+    }
+
+    .center-text p {
+      font-size: 14pt;
+      color: #ccc;
+    }
+    .dummy-image {
+  width: 100%;
+  padding-top: 75%; /* 4:3 비율 */
+  background-color: #aaa; /* 회색 박스 */
+  border-radius: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <div id="onboarding" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fafafa; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:10000;">
+    <p style="font-size:18pt; text-align:center; max-width:600px; color:#000; margin-bottom:40px; line-height:1.6;">
+      우리는 사라진 것을 위해 이야기를 남깁니다. 기후변화는 느리게, 그러나 확실하게 많은 것을 빼앗아갔습니다. 기억되지 않는 멸종은 두 번 죽는 것입니다. 그래서 우리는 오늘, 그들을 위한 장례를 준비했습니다.
+    </p>
+    <button id="enterSite" style="padding:12px 24px; font-size:14pt; background:#000; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+      입장하기
+    </button>
+  </div>
+  <div class="container">
+    <div class="left">
+      <div class="intro">
+        Archive of the Disappeared
+      </div>
+      <ul class="menu" id="menu">
+        <li class="active" data-id="intro">Intro</li>
+        <li data-id="seasons">1. Disappearing Seasons</li>
+        <li data-id="whitenomore">2. White No More</li>
+        <li data-id="coral">3. Dead Coral Diaries</li>
+        <li data-id="muted">4. Muted Sounds</li>
+        <li data-id="extinct">5. Extinct and Unnoticed</li>
+        <li data-id="forecasts">6. Final Forecasts</li>
+      </ul>
+    </div>
+
+    <div class="right" id="right">
+      <div class="content">
+        <p><strong></strong></p>
+      </div>
+    </div>
+  </div>
+  <div id="fullscreen-forecast" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fafafa; z-index:9999; overflow-y:auto;">
+    <div id="close-forecast" style="position:absolute; top:20px; right:20px; font-size:24px; font-weight:bold; cursor:pointer;">✕</div>
+    <div style="padding:40px 40px 40px 40px; max-width: 100%; margin:0 auto; text-align:left; font-size:16pt; line-height:1.8;">
+      우리는 사라진 것을 위해 이야기를 남깁니다. 흑백으로 남은 기억들은 다시 이야기가 됩니다. <br>
+      기후 변화로 인해, 우리가 알았던 세상은 빠르게 변하고 있습니다. <br>보고, 듣고, 느끼던 수많은 존재들이 조용히 사라져 갔습니다.
+      <br>우리가 기억하는 작은 순간들 속에 그들의 존재는 영원히 새겨질 것입니다.
+    </div>
+
+    <div style="border-top: 1px solid #ccc; margin: 40px 40px 20px;">
+      <div style="text-align:left; font-size: 12pt; font-weight:600; color:#666; margin-top:12px;">Disappearing Seasons</div>
+    </div>
+    <div class="gallery-row">
+      <div class="gallery-item"><img src="weather-1.png" alt="냉이"><div class="gallery-caption">사라져가는 첫 냉이 향기</div></div>
+      <div class="gallery-item"><img src="weather-2.png" alt="꿀벌"><div class="gallery-caption">점점 희미해지는 아카시아 벌소리</div></div>
+      <div class="gallery-item"><img src="weather-3.png" alt="가을 바람"><div class="gallery-caption">바람 속의 가을 냄새</div></div>
+      <div class="gallery-item"><img src="weather-4.png" alt="니트"><div class="gallery-caption">꺼내지 못한 니트</div></div>
+      <div class="gallery-item"><img src="weather-5.png" alt="비"><div class="gallery-caption">들리지 않는 장마 소리</div></div>
+      <div class="gallery-item"><img src="weather-6.png" alt="매미"><div class="gallery-caption">짧아진 매미 소리</div></div>
+    </div>
+
+    <!-- White No More -->
+    <div style="border-top: 1px solid #ccc; margin: 80px 40px 20px;">
+      <div style="text-align:left; font-size: 12pt; font-weight:600; color:#666; margin-top:12px;">White No More</div>
+    </div>
+    <div class="gallery-row">
+      <div class="gallery-item"><img src="snow 01.jpeg" alt="첫눈"><div class="gallery-caption">사라진 첫눈의 설렘</div></div>
+      <div class="gallery-item"><img src="snow-2.png" alt="햇살"><div class="gallery-caption">이불 속으로 스며들던 겨울 햇살</div></div>
+      <div class="gallery-item"><img src="snow-3.png" alt="하얀 골목"><div class="gallery-caption">점점 보기 힘들어지는 눈 덮인 골목길</div></div>
+      <div class="gallery-item"><img src="snow-4.png" alt="성에"><div class="gallery-caption">유리창에 피던 성에</div></div>
+      <div class="gallery-item"><img src="snow-5.png" alt="눈사람"><div class="gallery-caption">이제는 추억 속 풍경이 된 눈사람</div></div>
+      <div class="gallery-item"><img src="snow-6.png" alt="발자국"><div class="gallery-caption">흰 눈 위 첫 발자국</div></div>
+    </div>
+
+    <div style="border-top: 1px solid #ccc; margin: 80px 40px 20px;">
+      <div style="text-align:left; font-size: 12pt; font-weight:600; color:#666; margin-top:12px;">Dead Coral Diaries</div>
+    </div>
+    <div class="gallery-row">
+      <div class="gallery-item"><img src="ocean-1.png" alt="플랑크톤"><div class="gallery-caption">흐려진 해류 속의 플랑크톤</div></div>
+      <div class="gallery-item"><img src="ocean-2.png" alt="어류"><div class="gallery-caption">빈 산호 정원을 떠도는 물고기</div></div>
+      <div class="gallery-item"><img src="ocean-3.png" alt="바다거북"><div class="gallery-caption">서식지를 잃고 방황하는 바다거북</div></div>
+      <div class="gallery-item"><img src="ocean-4.png" alt="산호초"><div class="gallery-caption">하얗게 백화되어 죽어가는 산호초</div></div>
+      <div class="gallery-item"><img src="ocean-5.png" alt="해달"><div class="gallery-caption">떠내려가는 해달의 쉼터</div></div>
+      <div class="gallery-item"><img src="ocean-6.png" alt="해초"><div class="gallery-caption">사라진 해초의 물결</div></div>
+    </div>
+
+    
+    <div style="border-top: 1px solid #ccc; margin: 80px 40px 20px;">
+      <div style="text-align:left; font-size: 12pt; font-weight:600; color:#666; margin-top:12px;">Muted Sounds</div>
+    </div>
+    <div class="gallery-row">
+      <div class="gallery-item"><img src="sound-2.png" alt="폭우"><div class="gallery-caption">빗소리가 아닌 쏟아지는 공포</div></div>
+      <div class="gallery-item"><img src="sound-3.png" alt="철새"><div class="gallery-caption">더 이상 찾아오지 않는 철새들의 날갯짓</div></div>
+      <div class="gallery-item"><img src="sound-4.png" alt="숲"><div class="gallery-caption">숲이 내던 소리의 기억</div></div>
+      <div class="gallery-item"><img src="sound-5.png" alt="파도"><div class="gallery-caption">잔잔했던 해변의 리듬</div></div>
+      <div class="gallery-item"><img src="sound-6.png" alt="새소리"><div class="gallery-caption">더 이상 들을 수 없을지도 모르는 아침 새소리</div></div>
+    </div>
+
+    <!-- Extinct and Unnoticed -->
+    <div style="border-top: 1px solid #ccc; margin: 80px 40px 20px;">
+      <div style="text-align:left; font-size: 12pt; font-weight:600; color:#666; margin-top:12px;">Extinct and Unnoticed</div>
+    </div>
+    <div class="gallery-row">
+           <div class="gallery-item"><img src="extinct-3.jpg" alt="도롱뇽"><div class="gallery-caption">자취를 감춘 도롱뇽</div></div>
+      <div class="gallery-item"><img src="extinct-5.jpg" alt="들꽃"><div class="gallery-caption">이름조차 모르는 들꽃</div></div>
+      <div class="gallery-item"><img src="extinct-7.jpg" alt="포우울리"><div class="gallery-caption">Po‘ouli – 하와이의 마지막 꿀먹이새</div></div>
+      <div class="gallery-item"><img src="extinct-3.jpg" alt="크리스마스 아일랜드 스킨크"><div class="gallery-caption">Christmas Island Forest Skink – 2014년 멸종</div></div>
+      <div class="gallery-item"><img src="extinct-9.jpg" alt="카타리나 퍼프피쉬"><div class="gallery-caption">Catarina Pupfish – 멕시코 사막의 물고기</div></div>
+      <div class="gallery-item"><img src="extinct-10.jpg" alt="스플렌디다 개구리"><div class="gallery-caption">Craugastor myllomyllon – 단 한 번만 기록된 개구리</div></div>
+    </div>
+  </div>
+  <script>
+    const menuItems = document.querySelectorAll('#menu li');
+    const contentArea = document.querySelector('.right .content');
+
+    function shuffleGridGallery(html) {
+      const container = document.createElement('div');
+      container.innerHTML = html.trim();
+      const items = Array.from(container.querySelectorAll('.grid-gallery .item'));
+      const spacers = Array.from(container.querySelectorAll('.grid-gallery .spacer'));
+      const shuffled = [];
+
+      const all = items.concat(spacers);
+      for (let i = all.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [all[i], all[j]] = [all[j], all[i]];
+      }
+
+      const grid = container.querySelector('.grid-gallery');
+      if (grid) {
+        grid.innerHTML = '';
+        all.forEach(node => grid.appendChild(node));
+      }
+      return container.innerHTML;
+    }
+
+    const contents = {
+      intro: `
+        <h2>We Write for the Disappeared</h2>
+        <p>
+          <em>기후 위기는 단지 숫자의 문제가 아닙니다. 그것은 감각과 기억, 계절과 생명을 서서히 지워내는 이야기입니다.</em>
+        </p>
+        <p>
+          <br>
+          이 웹사이트는 사라진 존재들을 위한 디지털 장례식입니다. 북극곰이나 산호초처럼 뉴스에 나오는 상징적인 생물만이 아니라,
+          우리가 한때 느꼈던 바람의 결, 들판의 풀 내음, 겨울 아침의 침묵까지도 함께 추모합니다. 각 섹션은 하나의 사라진 장면을 담고 있습니다.
+          기억의 파편들을 따라가며, 우리는 무관심의 시간을 건너고자 합니다.
+        </p>
+        <p class="intro-desc">
+          아래 카테고리를 클릭해 잊혀진 계절, 하얀 겨울, 침묵한 소리의 장례를 시작해보세요.
+        </p>
+        <img
+          src="plant photo.jpg"
+          alt="문 이미지"
+          class="intro-image"
+        >
+      `,
+      seasons: `
+    <section class="description">
+      <h2>Disappearing Seasons</h2>
+      <p><em>“언제부터였을까. 봄은 너무 짧고, 여름은 갑자기 시작되었다.”</em></p>
+      <p>더 이상 사계절은 네 개가 아니다. 봄은 눈 깜짝할 새 지나가고, 가을은 한 번쯤 스웨터를 꺼내기 무섭게 사라진다. 이제 계절은 두 개로 느껴진다. 덥거나, 춥거나.</p>
+      <p>2020년 이후, 한국을 포함한 중위도 국가들에서는 봄과 가을의 평균 길이가 20~30% 가까이 줄어들었다.특히 2023년 서울의 봄은 '27일밖에 되지 않았다'는 기사 제목이 회자되기도 했다.</p>
+      <p>이는 단순한 감상이 아니라 기후 시스템의 구조적 붕괴를 의미한다.나무는 꽃을 피우지 못하고, 곤충은 시기를 놓쳐 죽는다. 계절의 순환이 깨어지면, 생태계도 함께 흔들린다.</p>
+      <blockquote>“사계절을 느껴본 마지막 세대는 우리일지도 모른다.”</blockquote>
+      <p>사계절은 기억의 프레임이다. 따뜻했던 봄날의 첫 산책, 선선한 바람이 불던 오후의 그 기분, 그런 순간들이 더 이상 ‘정해진 때’에 찾아오지 않는다.<br>
+      계절의 붕괴는, 우리의 정서적 연대감을 함께 빼앗아간다.</p>
+    </section>
+
+    <section class="grid-gallery">
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-1.png" alt="냉이">
+          </div>
+          <div class="back">
+            첫 냉이 향기
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-2.png" alt="꿀벌">
+          </div>
+          <div class="back">
+            아카시아 벌소리
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-3.png" alt="가을 바람">
+          </div>
+          <div class="back">
+            바람 속의 가을 냄새
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-4.png" alt="니트">
+          </div>
+          <div class="back">
+            꺼내지 못한 니트
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-6.png" alt="매미">
+          </div>
+          <div class="back">
+            짧아진 매미 소리
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="flip-card">
+          <div class="front">
+            <img src="weather-5.png" alt="비">
+          </div>
+          <div class="back">
+            들리지 않는 장마 소리
+          </div>
+        </div>
+      </div>
+      </section>
+      `,
+      whitenomore: `
+  <section class="description">
+    <h2>White No More</h2>
+    <p><em>“겨울이 더 이상 흰색이 아니게 되었다.”</em></p>
+    <p>북극여우는 순백의 털로 눈 속에 몸을 숨깁니다. 하지만 더 이상 눈이 쌓이지 않는 겨울엔 그 하얀 털이 오히려 눈에 띄게 되어 생존률이 낮아지고 있습니다.</p>
+    <p>한라산 중턱의 설송(눈 속의 소나무)은 온난화로 인해 더 낮은 고도에서는 자라지 못하게 되었고, 눈을 머금고 서 있던 풍경은 더 이상 보이지 않습니다.</p>
+    <blockquote>“하얀 겨울을 기억하지 못하는 아이들이 자라고 있다.”</blockquote>
+  </section>
+
+  <section class="grid-gallery">
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow 01.jpeg" alt="첫눈">
+        </div>
+        <div class="back">
+          사라진 첫눈의 설렘
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow-2.png" alt="이불 속 햇살">
+        </div>
+        <div class="back">
+          이불 속으로 스며들던 겨울 햇살
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow-3.png" alt="하얀 골목">
+        </div>
+        <div class="back">
+          눈 덮인 조용한 골목길
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow-4.png" alt="성에">
+        </div>
+        <div class="back">
+          유리창에 피던 성에
+        </div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow-5.png" alt="눈사람">
+        </div>
+        <div class="back">
+          만들지 못한 눈사람
+        </div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="flip-card">
+        <div class="front">
+          <img src="snow-6.png" alt="발자국">
+        </div>
+        <div class="back">
+          흰 눈 위 첫 발자국
+        </div>
+      </div>
+    </div>
+  </section>
+`     ,
+      coral: `
+<section class="description">
+  <h2>Dead Coral Diaries</h2>
+  <p><em>“바다는 여전히 푸르지만, 그 안은 텅 비어간다.”</em></p>
+  <p>지구 해수면 온도가 1도 상승할 때마다 산호초는 광범위하게 백화현상을 겪습니다. 이 현상은 단순한 색의 변화가 아니라, 산호가 죽어간다는 증거입니다.</p>
+  <p>이 산호초에 의존해 살던 나폴레옹피쉬 같은 대형 어류는 서식지를 잃고 점점 개체 수가 줄어들고 있습니다. 바닷속 정원은 점점 유령 도시처럼 변해가고 있습니다.</p>
+  <blockquote>“하얗게 바랜 산호는, 바다의 묘비다.”</blockquote>
+</section>
+
+<section class="grid-gallery">
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-4.png" alt="산호초">
+      </div>
+      <div class="back">죽어가는 산호초</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-3.png" alt="바다거북">
+      </div>
+      <div class="back">방향을 잃은 바다거북</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-2.png" alt="어류">
+      </div>
+      <div class="back">빈 산호 정원을 떠도는 물고기</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-6.png" alt="해초밭">
+      </div>
+      <div class="back">사라진 해초의 물결</div>
+    </div> 
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-5.png" alt="해달">
+      </div>
+      <div class="back">떠내려가는 해달의 쉼터</div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="ocean-1.png" alt="플랑크톤">
+      </div>
+      <div class="back">흐려진 해류 속의 플랑크톤</div>
+    </div>
+  </div>
+</section>
+`,
+      muted: `
+<section class="description">
+  <h2>Muted Sounds</h2>
+  <p><em>“소리조차 사라지고 있다.”</em></p>
+  <p>여름의 매미 소리는 이상 고온으로 인해 더 빠르게 시작되고, 더 일찍 끝납니다. 도시 열섬 현상 속에서 수명이 짧아진 매미는 울음소리를 오래 남기지 못합니다.</p>
+  <p>장마의 빗소리도 예전처럼 촉촉하게 내리지 않습니다. 기후 위기로 인한 집중호우는 소리보다는 두려움을 남깁니다.</p>
+  <blockquote>“조용한 멸종은, 귀로 먼저 시작된다.”</blockquote>
+</section>
+
+<section class="grid-gallery">
+  <div class="item"><div class="flip-card"><div class="front"><img src="weather-6.png" alt="매미소리"></div><div class="back">짧아진 매미 울음</div></div></div>
+  <div class="spacer"></div>
+  <div class="item"><div class="flip-card"><div class="front"><img src="sound-2.png" alt="폭우"></div><div class="back">빗소리가 아닌 쏟아지는 공포</div></div></div>
+  <div class="spacer"></div>
+  <div class="item"><div class="flip-card"><div class="front"><img src="sound-3.png" alt="철새의 비행"></div><div class="back">사라진 철새의 날갯짓</div></div></div>
+  <div class="spacer"></div>
+  <div class="item"><div class="flip-card"><div class="front"><img src="sound-4.png" alt="숲속 소리"></div><div class="back">숲이 내던 소리의 기억</div></div></div>
+  <div class="item"><div class="flip-card"><div class="front"><img src="sound-5.png" alt="파도소리"></div><div class="back">잔잔했던 해변의 리듬</div></div></div>
+  <div class="item"><div class="flip-card"><div class="front"><img src="sound-6.png" alt="사라진 새소리"></div><div class="back">아침을 깨우던 새소리</div></div></div>
+</section>
+`,
+      extinct: `
+<section class="description">
+  <h2>Extinct and Unnoticed</h2>
+  <p><em>“기억되지 않은 죽음은, 존재하지 않은 것과 같다.”</em></p>
+  <p>눈에 띄지 않는 생명들이 조용히 사라졌습니다. 이들은 작고, 조용하고, 이름조차 알기 어려웠기에 멸종했음에도 불구하고 제대로 기록되지 않았습니다. 하지만 그들의 부재는 생태계 전체에 균열을 남깁니다.</p>
+  <blockquote>“존재조차 모른 채 사라지는 생명들이, 우리 곁엔 너무 많다.”</blockquote>
+</section>
+
+<section class="grid-gallery">
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-3.jpg" alt="도롱뇽">
+      </div>
+      <div class="back">
+        자취를 감춘 도롱뇽
+      </div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-5.jpg" alt="들꽃">
+      </div>
+      <div class="back">
+        이름조차 모르는 들꽃
+      </div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-7.jpg" alt="포우울리">
+      </div>
+      <div class="back">
+        Po‘ouli – 하와이의 마지막 꿀먹이새
+      </div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-3.jpg" alt="크리스마스 아일랜드 스킨크">
+      </div>
+      <div class="back">
+        Christmas Island Forest Skink – 2014년 멸종
+      </div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-9.jpg" alt="카타리나 퍼프피쉬">
+      </div>
+      <div class="back">
+        Catarina Pupfish – 멕시코 사막의 물고기
+      </div>
+    </div>
+  </div>
+  <div class="item">
+    <div class="flip-card">
+      <div class="front">
+        <img src="extinct-10.jpg" alt="스플렌디다 개구리">
+      </div>
+      <div class="back">
+        Craugastor myllomyllon – 단 한 번만 기록된 개구리
+      </div>
+    </div>
+  </div>
+</section>
+  `,
+forecasts: `
+  <div id="final-gallery" style="position:relative; width:100vw; height:100vh; background:#fafafa; overflow:hidden;">
+    <div id="close-final" style="position:absolute; top:10px; left:30px; margin-bottom 30px;text-align: left; font-size:28px; font-weight:bold; cursor:pointer; z-index:10;">✕</div>
+    <div style="padding: 20px 20px 20px 20px; text-align: left; max-width: 1300px; margin: 0 auto 0 0px; font-size: 14pt; line-height: 1.8;">
+      우리는 사라진 것을 위해 이야기를 남깁니다. 흑백으로 남은 기억들은 다시 이야기가 됩니다.<br><br>
+      기후 변화로 인해, 우리가 알았던 세상은 빠르게 변하고 있습니다. 보고, 듣고, 느끼던 수많은 존재들이 조용히 사라져 갔습니다. 우리가 기억하는 작은 순간들 속에 그들의 존재는 영원히 새겨질 것입니다.
+    </div>
+    <div class="scroll-row" data-speed="40">
+      <div class="scroll-track">
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="weather-1.png" style="width:200px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">사라져가는 첫 냉이 향기</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="snow-3.png" style="width:200px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">점점 보기 힘들어지는 눈 덮인 골목길</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="ocean-4.png" style="width:200px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">하얗게 백화되어 죽어가는 산호초</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="sound-6.png" style="width:200px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">더 이상 들을 수 없을지도 모르는 아침 새소리</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="extinct-2.jpg" style="width:200px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">개체수가 급감한 야생 꿀벌</div>
+        </div>
+        </div>
+    </div>
+    <div class="scroll-row" data-speed="50">
+      <div class="scroll-track">
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="weather-2.png" style="width:180px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">점점 희미해지는 아카시아 벌소리</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="snow-5.png" style="width:180px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">이제는 추억 속 풍경이 된 눈사람</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="ocean-3.png" style="width:180px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">서식지를 잃고 방황하는 바다거북</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="sound-3.png" style="width:180px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">더 이상 찾아오지 않는 철새들의 날갯짓</div>
+        </div>
+        <div class="img-wrap" style="display: flex; flex-direction: column; align-items: center; margin-right:40px;">
+          <img src="extinct-1.jpg" style="width:180px; height:auto; filter:grayscale(100%); transition:transform 0.3s;" />
+          <div class="caption">잊혀진 이름, 일본강도래</div>
+        </div>
+        </div>
+    </div>
+    </div>
+`,
+    };
+
+    const fullscreenEl = document.getElementById('fullscreen-forecast');
+    const closeBtn = document.getElementById('close-forecast');
+
+    closeBtn.addEventListener('click', () => {
+      fullscreenEl.style.display = 'none';
+      document.querySelector('.container').style.display = 'flex';
+      document.body.classList.remove('forecast-open');
+    });
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        menuItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        const id = item.dataset.id;
+        if (id && contents[id]) {
+          contentArea.innerHTML = contents[id];
+          if (id === 'forecasts') {
+            fullscreenEl.style.display = 'block';
+            document.body.classList.add('forecast-open');
+            document.querySelector('.container').style.display = 'none';
+            return;
+          }
+          if (id === 'seasons' || id === 'whitenomore' || id === 'coral') {
+            const html = contentArea.innerHTML;
+            const randomized = shuffleGridGallery(html);
+            contentArea.innerHTML = randomized;
+          }
+          const rightPane = document.getElementById('right');
+          if (id === 'intro') {
+            rightPane.style.backgroundColor = '#000';
+            rightPane.style.color = '#fff';
+          } else {
+            rightPane.style.backgroundColor = '#fafafa';
+            rightPane.style.color = '#000';
+          }
+        }
+      });
+    });
+
+
+    document.getElementById('enterSite').addEventListener('click', function () {
+      document.getElementById('onboarding').style.display = 'none';
+    });
+  </script>
+  
+</body>
+</html>
